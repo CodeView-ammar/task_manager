@@ -1,5 +1,11 @@
 // Notifications handler for daily tasks application
 
+// DOM Elements
+let notificationDropdown;
+let notificationIndicator;
+let notificationContainer;
+let emptyNotification;
+
 const NOTIFICATION_CHECK_INTERVAL = 60000; // Check for notifications every minute
 
 // Function to check for new notifications
@@ -30,6 +36,9 @@ async function checkNotifications() {
 
 // Function to display a notification
 function displayNotification(notification) {
+    // Always add to dropdown
+    addNotificationToDropdown(notification);
+    
     // Check if browser supports notifications
     if (!('Notification' in window)) {
         console.log('This browser does not support desktop notifications');
@@ -136,11 +145,66 @@ function getDateFromISOString(isoString) {
     return date.toISOString().split('T')[0]; // YYYY-MM-DD
 }
 
-// Start checking for notifications when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    // Check immediately once on page load
+// Add notification to dropdown menu
+function addNotificationToDropdown(notification) {
+    // Make notification indicator visible
+    notificationIndicator.classList.remove('d-none');
+    
+    // Hide empty notification message if it exists
+    if (emptyNotification) {
+        emptyNotification.classList.add('d-none');
+    }
+    
+    // Create notification item
+    const notificationItem = document.createElement('div');
+    notificationItem.className = 'dropdown-item notification-item';
+    notificationItem.dataset.id = notification.id;
+    
+    // Format the notification content
+    notificationItem.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="mr-3">
+                <i class="fas fa-bell text-primary"></i>
+            </div>
+            <div class="small w-100">
+                <div class="fw-bold">${notification.title}</div>
+                <div>${notification.description || ''}</div>
+                <div class="text-muted text-start">${formatDateTime(notification.datetime)}</div>
+            </div>
+        </div>
+    `;
+    
+    // Add click event to redirect to task sheet
+    notificationItem.addEventListener('click', () => {
+        window.location.href = `/task-sheet/${getDateFromISOString(notification.datetime)}/`;
+    });
+    
+    // Add to container
+    notificationContainer.prepend(notificationItem);
+    
+    // Limit number of notifications in dropdown (keep most recent 5)
+    const items = notificationContainer.querySelectorAll('.notification-item');
+    if (items.length > 5) {
+        for (let i = 5; i < items.length; i++) {
+            notificationContainer.removeChild(items[i]);
+        }
+    }
+}
+
+// Initialize the notifications
+function initNotifications() {
+    // Get DOM elements
+    notificationDropdown = document.getElementById('notificationDropdown');
+    notificationIndicator = document.querySelector('.notification-indicator');
+    notificationContainer = document.querySelector('.notification-container');
+    emptyNotification = document.querySelector('.empty-notification');
+    
+    // Initial check for notifications
     checkNotifications();
     
-    // Then check periodically
+    // Set up periodic checks
     setInterval(checkNotifications, NOTIFICATION_CHECK_INTERVAL);
-});
+}
+
+// Start checking for notifications when the page loads
+document.addEventListener('DOMContentLoaded', initNotifications);

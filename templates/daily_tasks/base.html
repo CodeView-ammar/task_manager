@@ -39,6 +39,26 @@
                     </ul>
                     <ul class="navbar-nav ms-auto">
                         {% if user.is_authenticated %}
+                        <li class="nav-item dropdown me-2">
+                            <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-indicator d-none position-absolute top-0 start-100 translate-middle p-1 bg-danger rounded-circle">
+                                    <span class="visually-hidden">إشعارات جديدة</span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown" style="width: 300px;">
+                                <li>
+                                    <h6 class="dropdown-header">الإشعارات</h6>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li class="notification-container">
+                                    <div class="text-center p-2 empty-notification">
+                                        <p class="text-muted">لا توجد إشعارات</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle me-1"></i> {{ user.username }}
