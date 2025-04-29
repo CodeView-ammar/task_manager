@@ -323,3 +323,19 @@ def reminder_detail_api(request, pk):
     elif request.method == 'DELETE':
         reminder.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# Notifications API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def notifications_api(request):
+    """Get pending notifications for the current user"""
+    # Check for reminders that need notifications
+    pending_reminders = check_reminders()
+    
+    # Filter reminders for the current user
+    user_reminders = [r for r in pending_reminders if r.task_sheet.user == request.user]
+    
+    # Prepare notifications data
+    notifications = [send_notification(reminder) for reminder in user_reminders]
+    
+    return Response(notifications)

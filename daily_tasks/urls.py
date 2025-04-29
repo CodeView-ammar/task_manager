@@ -41,4 +41,7 @@ urlpatterns = [
     # Reminder API
     path('api/task-sheets/<int:task_sheet_id>/reminders/', views.reminder_list_api, name='api_reminder_list'),
     path('api/reminders/<int:pk>/', views.reminder_detail_api, name='api_reminder_detail'),
+    
+    # Notifications API
+    path('api/notifications/', views.notifications_api, name='api_notifications'),
 ]

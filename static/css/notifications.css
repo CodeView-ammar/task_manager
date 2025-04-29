@@ -1,0 +1,125 @@
+/* Styles for notifications */
+
+#notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 350px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* RTL support */
+html[dir="rtl"] #notification-container {
+    right: auto;
+    left: 20px;
+    align-items: flex-start;
+}
+
+.in-app-notification {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    width: 100%;
+    overflow: hidden;
+    animation: slide-in 0.3s ease-out;
+    cursor: pointer;
+    border-right: 4px solid #007bff;
+}
+
+html[dir="rtl"] .in-app-notification {
+    border-right: none;
+    border-left: 4px solid #007bff;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.notification-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #343a40;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #343a40;
+}
+
+.notification-body {
+    padding: 15px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.notification-time {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #6c757d;
+    text-align: right;
+}
+
+html[dir="rtl"] .notification-time {
+    text-align: left;
+}
+
+/* Animation for notifications */
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+html[dir="rtl"] .in-app-notification {
+    animation-name: slide-in-rtl;
+}
+
+@keyframes slide-in-rtl {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Priority colors */
+.priority-high {
+    border-color: #dc3545 !important;
+}
+
+.priority-medium {
+    border-color: #fd7e14 !important;
+}
+
+.priority-low {
+    border-color: #28a745 !important;
+}
