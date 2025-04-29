@@ -1,0 +1,187 @@
+{% extends 'daily_tasks/base.html' %}
+
+{% block title %}لوحة التحكم - مدير المهام اليومية{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>لوحة التحكم</h1>
+    <p class="text-muted">مرحبا {{ user.first_name|default:user.username }}، هذه هي لوحة التحكم الخاصة بك</p>
+</div>
+
+<!-- Today's quick actions -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">مهام اليوم</h5>
+                <p id="current-date" class="text-muted"></p>
+                <a href="{% url 'task_sheet' %}" class="btn btn-primary">إدارة مهام اليوم</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard widgets -->
+<div class="row">
+    <!-- Tasks Overview -->
+    <div class="col-md-6 mb-4">
+        <div class="dashboard-widget bg-white">
+            <h3 class="widget-title">نظرة عامة على المهام</h3>
+            <div id="task-stats" class="row text-center">
+                <div class="col-4">
+                    <div class="card border-0 mb-3">
+                        <div class="card-body">
+                            <h2 id="priorities-count" class="mb-0 fw-bold text-primary">-</h2>
+                            <p class="text-muted small mb-0">الأولويات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border-0 mb-3">
+                        <div class="card-body">
+                            <h2 id="todos-count" class="mb-0 fw-bold text-success">-</h2>
+                            <p class="text-muted small mb-0">المهام</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border-0 mb-3">
+                        <div class="card-body">
+                            <h2 id="completed-count" class="mb-0 fw-bold text-info">-</h2>
+                            <p class="text-muted small mb-0">مكتملة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-md-6 mb-4">
+        <div class="dashboard-widget bg-white">
+            <h3 class="widget-title">أحدث النشاطات</h3>
+            <div id="recent-activity" class="list-group list-group-flush">
+                <div class="text-center py-3" id="loading-activity">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+                <div id="no-activity" class="text-center py-3" style="display: none;">
+                    <p class="text-muted">لا يوجد نشاط حتى الآن</p>
+                </div>
+                <!-- Activity items will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Reminders -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="dashboard-widget bg-white">
+            <h3 class="widget-title">التذكيرات القادمة</h3>
+            <div id="reminders-list" class="list-group list-group-flush">
+                <div class="text-center py-3" id="loading-reminders">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+                <div id="no-reminders" class="text-center py-3" style="display: none;">
+                    <p class="text-muted">لا توجد تذكيرات قادمة</p>
+                </div>
+                <!-- Reminder items will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format and display current date
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = today.toLocaleDateString('ar-EG', options);
+        
+        // Fetch today's task sheet data
+        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        fetch(`/api/task-sheets/${todayStr}/`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update task statistics
+            document.getElementById('priorities-count').textContent = data.priorities.length;
+            document.getElementById('todos-count').textContent = data.todos.length;
+            
+            // Count completed tasks
+            const completedTasks = [...data.priorities, ...data.todos].filter(task => task.completed).length;
+            document.getElementById('completed-count').textContent = completedTasks;
+            
+            // Hide loading indicators
+            document.getElementById('loading-activity').style.display = 'none';
+            document.getElementById('loading-reminders').style.display = 'none';
+            
+            // Display reminders
+            const remindersList = document.getElementById('reminders-list');
+            if (data.reminders && data.reminders.length > 0) {
+                data.reminders.forEach(reminder => {
+                    const reminderDate = new Date(reminder.datetime);
+                    const reminderItem = document.createElement('div');
+                    reminderItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    reminderItem.innerHTML = `
+                        <div>
+                            <h6 class="mb-0">${reminder.title}</h6>
+                            <small class="text-muted">${reminderDate.toLocaleString('ar-EG')}</small>
+                        </div>
+                        <span class="badge ${reminder.completed ? 'bg-success' : 'bg-warning'} rounded-pill">
+                            ${reminder.completed ? 'مكتمل' : 'قيد الانتظار'}
+                        </span>
+                    `;
+                    remindersList.appendChild(reminderItem);
+                });
+            } else {
+                document.getElementById('no-reminders').style.display = 'block';
+            }
+            
+            // Display recent activity (using notes as activity)
+            const recentActivity = document.getElementById('recent-activity');
+            if (data.notes && data.notes.length > 0) {
+                data.notes.forEach(note => {
+                    const noteDate = new Date(note.created_at);
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'list-group-item';
+                    activityItem.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">ملاحظة جديدة</h6>
+                            <small>${noteDate.toLocaleString('ar-EG')}</small>
+                        </div>
+                        <p class="mb-1">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</p>
+                    `;
+                    recentActivity.appendChild(activityItem);
+                });
+            } else {
+                document.getElementById('no-activity').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            document.getElementById('loading-activity').style.display = 'none';
+            document.getElementById('loading-reminders').style.display = 'none';
+            document.getElementById('no-activity').style.display = 'block';
+            document.getElementById('no-reminders').style.display = 'block';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,414 @@
+{% extends 'daily_tasks/base.html' %}
+
+{% block title %}سجل المهام - مدير المهام اليومية{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>سجل المهام</h1>
+    <p class="text-muted">استعرض سجل مهامك السابقة وإنجازاتك</p>
+</div>
+
+<!-- Calendar filter -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">تصفية حسب التاريخ</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="month-filter" class="form-label">الشهر</label>
+                            <select id="month-filter" class="form-select">
+                                <option value="">كل الشهور</option>
+                                <option value="1">يناير</option>
+                                <option value="2">فبراير</option>
+                                <option value="3">مارس</option>
+                                <option value="4">أبريل</option>
+                                <option value="5">مايو</option>
+                                <option value="6">يونيو</option>
+                                <option value="7">يوليو</option>
+                                <option value="8">أغسطس</option>
+                                <option value="9">سبتمبر</option>
+                                <option value="10">أكتوبر</option>
+                                <option value="11">نوفمبر</option>
+                                <option value="12">ديسمبر</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="year-filter" class="form-label">السنة</label>
+                            <select id="year-filter" class="form-select">
+                                <option value="">كل السنوات</option>
+                                <!-- Years will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button id="filter-button" class="btn btn-primary w-100">تصفية</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History list -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">سجل المهام</h5>
+                <div id="history-list" class="list-group mt-3">
+                    <div class="text-center py-3" id="loading-history">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-history" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لا توجد سجلات مهام متوفرة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task details modal -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="task-date-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Task details content will be populated by JavaScript -->
+                <div id="task-details-content">
+                    <div class="text-center py-3" id="loading-details">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Populate year filter with recent years
+        const currentYear = new Date().getFullYear();
+        const yearFilter = document.getElementById('year-filter');
+        
+        for (let year = currentYear; year >= currentYear - 5; year--) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearFilter.appendChild(option);
+        }
+        
+        // Initial load of task history
+        loadTaskHistory();
+        
+        // Filter button click handler
+        document.getElementById('filter-button').addEventListener('click', function() {
+            loadTaskHistory();
+        });
+        
+        // Load task history with optional filters
+        function loadTaskHistory() {
+            const monthFilter = document.getElementById('month-filter').value;
+            const yearFilter = document.getElementById('year-filter').value;
+            
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = `
+                <div class="text-center py-3" id="loading-history">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+                <div id="no-history" class="text-center py-3" style="display: none;">
+                    <p class="text-muted">لا توجد سجلات مهام متوفرة</p>
+                </div>
+            `;
+            
+            // Construct query parameters for filtering
+            let queryParams = new URLSearchParams();
+            if (monthFilter) queryParams.append('month', monthFilter);
+            if (yearFilter) queryParams.append('year', yearFilter);
+            
+            // Fetch task history data from API
+            fetch(`/api/task-sheets/?${queryParams.toString()}`, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loading-history').style.display = 'none';
+                
+                if (data && data.length > 0) {
+                    // Sort task sheets by date (newest first)
+                    data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    const historyItems = document.createElement('div');
+                    
+                    data.forEach(taskSheet => {
+                        const taskDate = new Date(taskSheet.date);
+                        const formattedDate = taskDate.toLocaleDateString('ar-EG', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        // Calculate stats
+                        const totalTasks = taskSheet.priorities.length + taskSheet.todos.length;
+                        const completedTasks = [...taskSheet.priorities, ...taskSheet.todos]
+                            .filter(task => task.completed).length;
+                        const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                        
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'list-group-item list-group-item-action';
+                        historyItem.setAttribute('data-task-sheet-id', taskSheet.id);
+                        historyItem.setAttribute('data-task-date', taskSheet.date);
+                        historyItem.setAttribute('data-bs-toggle', 'modal');
+                        historyItem.setAttribute('data-bs-target', '#taskDetailsModal');
+                        
+                        historyItem.innerHTML = `
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${formattedDate}</h5>
+                                <small>
+                                    <span class="badge ${completionRate >= 75 ? 'bg-success' : completionRate >= 50 ? 'bg-warning' : 'bg-danger'} rounded-pill">
+                                        ${completionRate}%
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <p class="mb-1">
+                                    <span class="me-3">
+                                        <i class="fas fa-list-ul me-1"></i> ${taskSheet.todos.length} مهام
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-star me-1"></i> ${taskSheet.priorities.length} أولويات
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-sticky-note me-1"></i> ${taskSheet.notes.length} ملاحظات
+                                    </span>
+                                </p>
+                                <small>
+                                    <i class="fas fa-chevron-left"></i>
+                                </small>
+                            </div>
+                        `;
+                        
+                        historyItems.appendChild(historyItem);
+                    });
+                    
+                    historyList.appendChild(historyItems);
+                    
+                    // Add event listeners to history items
+                    document.querySelectorAll('[data-task-sheet-id]').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const taskSheetId = this.dataset.taskSheetId;
+                            const taskDate = this.dataset.taskDate;
+                            showTaskDetails(taskSheetId, taskDate);
+                        });
+                    });
+                } else {
+                    document.getElementById('no-history').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading task history:', error);
+                document.getElementById('loading-history').style.display = 'none';
+                document.getElementById('no-history').style.display = 'block';
+            });
+        }
+        
+        // Show task details in modal
+        function showTaskDetails(taskSheetId, taskDate) {
+            const modalTitle = document.getElementById('task-date-title');
+            const detailsContent = document.getElementById('task-details-content');
+            
+            // Format the date for display
+            const formattedDate = new Date(taskDate).toLocaleDateString('ar-EG', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            modalTitle.textContent = formattedDate;
+            detailsContent.innerHTML = `
+                <div class="text-center py-3" id="loading-details">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            `;
+            
+            // Fetch task sheet details
+            fetch(`/api/task-sheets/${taskDate}/`, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Create details view
+                let detailsHTML = '';
+                
+                // Priorities section
+                detailsHTML += `
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">الأولويات</h5>
+                        </div>
+                        <div class="card-body">
+                `;
+                
+                if (data.priorities && data.priorities.length > 0) {
+                    detailsHTML += '<ul class="list-group list-group-flush">';
+                    data.priorities.forEach(priority => {
+                        detailsHTML += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>${priority.title}</span>
+                                <span class="badge ${priority.completed ? 'bg-success' : 'bg-secondary'} rounded-pill">
+                                    ${priority.completed ? 'مكتمل' : 'غير مكتمل'}
+                                </span>
+                            </li>
+                        `;
+                    });
+                    detailsHTML += '</ul>';
+                } else {
+                    detailsHTML += '<p class="text-muted text-center">لا توجد أولويات</p>';
+                }
+                
+                detailsHTML += `
+                        </div>
+                    </div>
+                `;
+                
+                // Todos section
+                detailsHTML += `
+                    <div class="card mb-3">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">المهام</h5>
+                        </div>
+                        <div class="card-body">
+                `;
+                
+                if (data.todos && data.todos.length > 0) {
+                    detailsHTML += '<ul class="list-group list-group-flush">';
+                    data.todos.forEach(todo => {
+                        detailsHTML += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>${todo.title}</span>
+                                <span class="badge ${todo.completed ? 'bg-success' : 'bg-secondary'} rounded-pill">
+                                    ${todo.completed ? 'مكتمل' : 'غير مكتمل'}
+                                </span>
+                            </li>
+                        `;
+                    });
+                    detailsHTML += '</ul>';
+                } else {
+                    detailsHTML += '<p class="text-muted text-center">لا توجد مهام</p>';
+                }
+                
+                detailsHTML += `
+                        </div>
+                    </div>
+                `;
+                
+                // Notes section
+                if (data.notes && data.notes.length > 0) {
+                    detailsHTML += `
+                        <div class="card mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">الملاحظات</h5>
+                            </div>
+                            <div class="card-body">
+                    `;
+                    
+                    data.notes.forEach(note => {
+                        const noteDate = new Date(note.created_at);
+                        detailsHTML += `
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <small class="text-muted d-block mb-2">${noteDate.toLocaleString('ar-EG')}</small>
+                                    <p class="card-text">${note.content}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    detailsHTML += `
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Learnings section
+                if (data.learnings && data.learnings.length > 0) {
+                    detailsHTML += `
+                        <div class="card mb-3">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">التعلم</h5>
+                            </div>
+                            <div class="card-body">
+                    `;
+                    
+                    data.learnings.forEach(learning => {
+                        const learningDate = new Date(learning.created_at);
+                        detailsHTML += `
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <small class="text-muted d-block mb-2">${learningDate.toLocaleString('ar-EG')}</small>
+                                    <p class="card-text">${learning.content}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    detailsHTML += `
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                detailsContent.innerHTML = detailsHTML;
+            })
+            .catch(error => {
+                console.error('Error loading task details:', error);
+                detailsContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        حدث خطأ أثناء تحميل التفاصيل. يرجى المحاولة مرة أخرى.
+                    </div>
+                `;
+            });
+        }
+    });
+</script>
+{% endblock %}

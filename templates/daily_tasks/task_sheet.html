@@ -1,0 +1,926 @@
+{% extends 'daily_tasks/base.html' %}
+
+{% block title %}مهام اليوم - مدير المهام اليومية{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>مهام اليوم</h1>
+        <div class="date-nav">
+            <button id="prev-day" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-right"></i></button>
+            <span id="current-date" class="date-display mx-3"></span>
+            <button id="next-day" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-left"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Priorities Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">الأولويات الرئيسية</h5>
+                <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addPriorityModal">
+                    <i class="fas fa-plus"></i> إضافة
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="priorities-list" class="task-list">
+                    <div class="text-center py-3" id="loading-priorities">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-priorities" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لا توجد أولويات محددة لهذا اليوم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Todo Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">قائمة المهام</h5>
+                <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addTodoModal">
+                    <i class="fas fa-plus"></i> إضافة
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="todos-list" class="task-list">
+                    <div class="text-center py-3" id="loading-todos">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-todos" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لا توجد مهام محددة لهذا اليوم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Notes Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">ملاحظات</h5>
+                <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                    <i class="fas fa-plus"></i> إضافة
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="notes-list">
+                    <div class="text-center py-3" id="loading-notes">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-notes" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لا توجد ملاحظات لهذا اليوم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learning Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">ماذا تعلمت اليوم؟</h5>
+                <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addLearningModal">
+                    <i class="fas fa-plus"></i> إضافة
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="learnings-list">
+                    <div class="text-center py-3" id="loading-learnings">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-learnings" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لم تسجل أي تعلم لهذا اليوم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reminders Section -->
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">التذكيرات</h5>
+                <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addReminderModal">
+                    <i class="fas fa-plus"></i> إضافة
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="reminders-list">
+                    <div class="text-center py-3" id="loading-reminders">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-reminders" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لا توجد تذكيرات لهذا اليوم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Add Priority Modal -->
+<div class="modal fade" id="addPriorityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة أولوية جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-priority-form">
+                    <div class="mb-3">
+                        <label for="priority-title" class="form-label">عنوان الأولوية</label>
+                        <input type="text" class="form-control" id="priority-title" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">إضافة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Todo Modal -->
+<div class="modal fade" id="addTodoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة مهمة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-todo-form">
+                    <div class="mb-3">
+                        <label for="todo-title" class="form-label">عنوان المهمة</label>
+                        <input type="text" class="form-control" id="todo-title" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-success">إضافة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal fade" id="addNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة ملاحظة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-note-form">
+                    <div class="mb-3">
+                        <label for="note-content" class="form-label">الملاحظة</label>
+                        <textarea class="form-control" id="note-content" rows="4" required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-info">إضافة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Learning Modal -->
+<div class="modal fade" id="addLearningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة تعلم جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-learning-form">
+                    <div class="mb-3">
+                        <label for="learning-content" class="form-label">ماذا تعلمت اليوم؟</label>
+                        <textarea class="form-control" id="learning-content" rows="4" required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-warning">إضافة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Reminder Modal -->
+<div class="modal fade" id="addReminderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة تذكير جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-reminder-form">
+                    <div class="mb-3">
+                        <label for="reminder-title" class="form-label">عنوان التذكير</label>
+                        <input type="text" class="form-control" id="reminder-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reminder-datetime" class="form-label">التاريخ والوقت</label>
+                        <input type="datetime-local" class="form-control" id="reminder-datetime" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-secondary">إضافة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize variables
+    let currentTaskSheet = null;
+    let currentDate = new Date("{{ date|date:'Y-m-d' }}");
+    let taskSheetId = null;
+    
+    // Format and display current date
+    function updateDateDisplay() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = currentDate.toLocaleDateString('ar-EG', options);
+    }
+    
+    // Load task sheet data for the current date
+    function loadTaskSheet() {
+        // Reset UI
+        document.getElementById('priorities-list').innerHTML = `
+            <div class="text-center py-3" id="loading-priorities">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+            </div>
+            <div id="no-priorities" class="text-center py-3" style="display: none;">
+                <p class="text-muted">لا توجد أولويات محددة لهذا اليوم</p>
+            </div>
+        `;
+        document.getElementById('todos-list').innerHTML = `
+            <div class="text-center py-3" id="loading-todos">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+            </div>
+            <div id="no-todos" class="text-center py-3" style="display: none;">
+                <p class="text-muted">لا توجد مهام محددة لهذا اليوم</p>
+            </div>
+        `;
+        document.getElementById('notes-list').innerHTML = `
+            <div class="text-center py-3" id="loading-notes">
+                <div class="spinner-border text-info" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+            </div>
+            <div id="no-notes" class="text-center py-3" style="display: none;">
+                <p class="text-muted">لا توجد ملاحظات لهذا اليوم</p>
+            </div>
+        `;
+        document.getElementById('learnings-list').innerHTML = `
+            <div class="text-center py-3" id="loading-learnings">
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+            </div>
+            <div id="no-learnings" class="text-center py-3" style="display: none;">
+                <p class="text-muted">لم تسجل أي تعلم لهذا اليوم</p>
+            </div>
+        `;
+        document.getElementById('reminders-list').innerHTML = `
+            <div class="text-center py-3" id="loading-reminders">
+                <div class="spinner-border text-secondary" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+            </div>
+            <div id="no-reminders" class="text-center py-3" style="display: none;">
+                <p class="text-muted">لا توجد تذكيرات لهذا اليوم</p>
+            </div>
+        `;
+        
+        // Format date as YYYY-MM-DD
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        // Fetch task sheet data from API
+        fetch(`/api/task-sheets/${dateStr}/`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            currentTaskSheet = data;
+            taskSheetId = data.id;
+            
+            // Update priorities
+            updatePriorities(data.priorities);
+            
+            // Update todos
+            updateTodos(data.todos);
+            
+            // Update notes
+            updateNotes(data.notes);
+            
+            // Update learnings
+            updateLearnings(data.learnings);
+            
+            // Update reminders
+            updateReminders(data.reminders);
+            
+            // Update URL
+            const newUrl = `{% url 'task_sheet' %}${dateStr}/`;
+            history.pushState(null, '', newUrl);
+        })
+        .catch(error => {
+            console.error('Error loading task sheet:', error);
+            document.getElementById('loading-priorities').style.display = 'none';
+            document.getElementById('no-priorities').style.display = 'block';
+            document.getElementById('loading-todos').style.display = 'none';
+            document.getElementById('no-todos').style.display = 'block';
+            document.getElementById('loading-notes').style.display = 'none';
+            document.getElementById('no-notes').style.display = 'block';
+            document.getElementById('loading-learnings').style.display = 'none';
+            document.getElementById('no-learnings').style.display = 'block';
+            document.getElementById('loading-reminders').style.display = 'none';
+            document.getElementById('no-reminders').style.display = 'block';
+        });
+    }
+    
+    // Update priorities list
+    function updatePriorities(priorities) {
+        const prioritiesList = document.getElementById('priorities-list');
+        prioritiesList.innerHTML = '';
+        
+        if (priorities && priorities.length > 0) {
+            priorities.forEach(priority => {
+                const priorityItem = document.createElement('div');
+                priorityItem.className = `task-item ${priority.completed ? 'completed' : ''}`;
+                priorityItem.innerHTML = `
+                    <div class="form-check d-flex justify-content-between align-items-center">
+                        <div>
+                            <input class="form-check-input priority-checkbox" type="checkbox" 
+                                   id="priority-${priority.id}" ${priority.completed ? 'checked' : ''}
+                                   data-id="${priority.id}">
+                            <label class="form-check-label task-title ms-2" for="priority-${priority.id}">
+                                ${priority.title}
+                            </label>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger delete-priority" data-id="${priority.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                prioritiesList.appendChild(priorityItem);
+            });
+            
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.priority-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const priorityId = this.dataset.id;
+                    const completed = this.checked;
+                    updatePriorityStatus(priorityId, completed);
+                });
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-priority').forEach(button => {
+                button.addEventListener('click', function() {
+                    const priorityId = this.dataset.id;
+                    deletePriority(priorityId);
+                });
+            });
+        } else {
+            prioritiesList.innerHTML = `
+                <div class="text-center py-3">
+                    <p class="text-muted">لا توجد أولويات محددة لهذا اليوم</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Update todos list
+    function updateTodos(todos) {
+        const todosList = document.getElementById('todos-list');
+        todosList.innerHTML = '';
+        
+        if (todos && todos.length > 0) {
+            todos.forEach(todo => {
+                const todoItem = document.createElement('div');
+                todoItem.className = `task-item ${todo.completed ? 'completed' : ''}`;
+                todoItem.innerHTML = `
+                    <div class="form-check d-flex justify-content-between align-items-center">
+                        <div>
+                            <input class="form-check-input todo-checkbox" type="checkbox" 
+                                   id="todo-${todo.id}" ${todo.completed ? 'checked' : ''}
+                                   data-id="${todo.id}">
+                            <label class="form-check-label task-title ms-2" for="todo-${todo.id}">
+                                ${todo.title}
+                            </label>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger delete-todo" data-id="${todo.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                todosList.appendChild(todoItem);
+            });
+            
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const todoId = this.dataset.id;
+                    const completed = this.checked;
+                    updateTodoStatus(todoId, completed);
+                });
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-todo').forEach(button => {
+                button.addEventListener('click', function() {
+                    const todoId = this.dataset.id;
+                    deleteTodo(todoId);
+                });
+            });
+        } else {
+            todosList.innerHTML = `
+                <div class="text-center py-3">
+                    <p class="text-muted">لا توجد مهام محددة لهذا اليوم</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Update notes list
+    function updateNotes(notes) {
+        const notesList = document.getElementById('notes-list');
+        notesList.innerHTML = '';
+        
+        if (notes && notes.length > 0) {
+            notes.forEach(note => {
+                const noteDate = new Date(note.created_at);
+                const noteItem = document.createElement('div');
+                noteItem.className = 'card mb-3';
+                noteItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">${noteDate.toLocaleString('ar-EG')}</small>
+                            <button class="btn btn-sm btn-outline-danger delete-note" data-id="${note.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <p class="card-text">${note.content}</p>
+                    </div>
+                `;
+                notesList.appendChild(noteItem);
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-note').forEach(button => {
+                button.addEventListener('click', function() {
+                    const noteId = this.dataset.id;
+                    deleteNote(noteId);
+                });
+            });
+        } else {
+            notesList.innerHTML = `
+                <div class="text-center py-3">
+                    <p class="text-muted">لا توجد ملاحظات لهذا اليوم</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Update learnings list
+    function updateLearnings(learnings) {
+        const learningsList = document.getElementById('learnings-list');
+        learningsList.innerHTML = '';
+        
+        if (learnings && learnings.length > 0) {
+            learnings.forEach(learning => {
+                const learningDate = new Date(learning.created_at);
+                const learningItem = document.createElement('div');
+                learningItem.className = 'card mb-3';
+                learningItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">${learningDate.toLocaleString('ar-EG')}</small>
+                            <button class="btn btn-sm btn-outline-danger delete-learning" data-id="${learning.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <p class="card-text">${learning.content}</p>
+                    </div>
+                `;
+                learningsList.appendChild(learningItem);
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-learning').forEach(button => {
+                button.addEventListener('click', function() {
+                    const learningId = this.dataset.id;
+                    deleteLearning(learningId);
+                });
+            });
+        } else {
+            learningsList.innerHTML = `
+                <div class="text-center py-3">
+                    <p class="text-muted">لم تسجل أي تعلم لهذا اليوم</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Update reminders list
+    function updateReminders(reminders) {
+        const remindersList = document.getElementById('reminders-list');
+        remindersList.innerHTML = '';
+        
+        if (reminders && reminders.length > 0) {
+            reminders.forEach(reminder => {
+                const reminderDate = new Date(reminder.datetime);
+                const reminderItem = document.createElement('div');
+                reminderItem.className = 'card mb-3';
+                reminderItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title">${reminder.title}</h5>
+                            <button class="btn btn-sm btn-outline-danger delete-reminder" data-id="${reminder.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="card-text"><i class="fas fa-clock me-2"></i>${reminderDate.toLocaleString('ar-EG')}</p>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input reminder-checkbox" type="checkbox" 
+                                    id="reminder-${reminder.id}" ${reminder.completed ? 'checked' : ''}
+                                    data-id="${reminder.id}">
+                                <label class="form-check-label" for="reminder-${reminder.id}">
+                                    ${reminder.completed ? 'مكتمل' : 'قيد الانتظار'}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                remindersList.appendChild(reminderItem);
+            });
+            
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.reminder-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const reminderId = this.dataset.id;
+                    const completed = this.checked;
+                    updateReminderStatus(reminderId, completed);
+                });
+            });
+            
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-reminder').forEach(button => {
+                button.addEventListener('click', function() {
+                    const reminderId = this.dataset.id;
+                    deleteReminder(reminderId);
+                });
+            });
+        } else {
+            remindersList.innerHTML = `
+                <div class="text-center py-3">
+                    <p class="text-muted">لا توجد تذكيرات لهذا اليوم</p>
+                </div>
+            `;
+        }
+    }
+    
+    // CRUD operations for priorities
+    function addPriority(title) {
+        return fetch(`/api/task-sheets/${taskSheetId}/priorities/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ title }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function updatePriorityStatus(priorityId, completed) {
+        return fetch(`/api/priorities/${priorityId}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ completed }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function deletePriority(priorityId) {
+        if (confirm('هل أنت متأكد من حذف هذه الأولوية؟')) {
+            return fetch(`/api/priorities/${priorityId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                credentials: 'same-origin'
+            })
+            .then(() => loadTaskSheet())
+            .catch(error => console.error('Error deleting priority:', error));
+        }
+    }
+    
+    // CRUD operations for todos
+    function addTodo(title) {
+        return fetch(`/api/task-sheets/${taskSheetId}/todos/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ title }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function updateTodoStatus(todoId, completed) {
+        return fetch(`/api/todos/${todoId}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ completed }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function deleteTodo(todoId) {
+        if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+            return fetch(`/api/todos/${todoId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                credentials: 'same-origin'
+            })
+            .then(() => loadTaskSheet())
+            .catch(error => console.error('Error deleting todo:', error));
+        }
+    }
+    
+    // CRUD operations for notes
+    function addNote(content) {
+        return fetch(`/api/task-sheets/${taskSheetId}/notes/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function deleteNote(noteId) {
+        if (confirm('هل أنت متأكد من حذف هذه الملاحظة؟')) {
+            return fetch(`/api/notes/${noteId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                credentials: 'same-origin'
+            })
+            .then(() => loadTaskSheet())
+            .catch(error => console.error('Error deleting note:', error));
+        }
+    }
+    
+    // CRUD operations for learnings
+    function addLearning(content) {
+        return fetch(`/api/task-sheets/${taskSheetId}/learnings/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function deleteLearning(learningId) {
+        if (confirm('هل أنت متأكد من حذف هذا التعلم؟')) {
+            return fetch(`/api/learnings/${learningId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                credentials: 'same-origin'
+            })
+            .then(() => loadTaskSheet())
+            .catch(error => console.error('Error deleting learning:', error));
+        }
+    }
+    
+    // CRUD operations for reminders
+    function addReminder(title, datetime) {
+        return fetch(`/api/task-sheets/${taskSheetId}/reminders/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ title, datetime }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function updateReminderStatus(reminderId, completed) {
+        return fetch(`/api/reminders/${reminderId}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ completed }),
+            credentials: 'same-origin'
+        });
+    }
+    
+    function deleteReminder(reminderId) {
+        if (confirm('هل أنت متأكد من حذف هذا التذكير؟')) {
+            return fetch(`/api/reminders/${reminderId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                credentials: 'same-origin'
+            })
+            .then(() => loadTaskSheet())
+            .catch(error => console.error('Error deleting reminder:', error));
+        }
+    }
+    
+    // Initialization
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize current date display
+        updateDateDisplay();
+        
+        // Load task sheet data
+        loadTaskSheet();
+        
+        // Date navigation handlers
+        document.getElementById('prev-day').addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDateDisplay();
+            loadTaskSheet();
+        });
+        
+        document.getElementById('next-day').addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+            loadTaskSheet();
+        });
+        
+        // Form submit handlers
+        document.getElementById('add-priority-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('priority-title');
+            const title = titleInput.value.trim();
+            if (title) {
+                addPriority(title)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to add priority');
+                        return response.json();
+                    })
+                    .then(() => {
+                        titleInput.value = '';
+                        loadTaskSheet();
+                        bootstrap.Modal.getInstance(document.getElementById('addPriorityModal')).hide();
+                    })
+                    .catch(error => console.error('Error adding priority:', error));
+            }
+        });
+        
+        document.getElementById('add-todo-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('todo-title');
+            const title = titleInput.value.trim();
+            if (title) {
+                addTodo(title)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to add todo');
+                        return response.json();
+                    })
+                    .then(() => {
+                        titleInput.value = '';
+                        loadTaskSheet();
+                        bootstrap.Modal.getInstance(document.getElementById('addTodoModal')).hide();
+                    })
+                    .catch(error => console.error('Error adding todo:', error));
+            }
+        });
+        
+        document.getElementById('add-note-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const contentInput = document.getElementById('note-content');
+            const content = contentInput.value.trim();
+            if (content) {
+                addNote(content)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to add note');
+                        return response.json();
+                    })
+                    .then(() => {
+                        contentInput.value = '';
+                        loadTaskSheet();
+                        bootstrap.Modal.getInstance(document.getElementById('addNoteModal')).hide();
+                    })
+                    .catch(error => console.error('Error adding note:', error));
+            }
+        });
+        
+        document.getElementById('add-learning-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const contentInput = document.getElementById('learning-content');
+            const content = contentInput.value.trim();
+            if (content) {
+                addLearning(content)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to add learning');
+                        return response.json();
+                    })
+                    .then(() => {
+                        contentInput.value = '';
+                        loadTaskSheet();
+                        bootstrap.Modal.getInstance(document.getElementById('addLearningModal')).hide();
+                    })
+                    .catch(error => console.error('Error adding learning:', error));
+            }
+        });
+        
+        document.getElementById('add-reminder-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('reminder-title');
+            const datetimeInput = document.getElementById('reminder-datetime');
+            const title = titleInput.value.trim();
+            const datetime = datetimeInput.value;
+            if (title && datetime) {
+                addReminder(title, datetime)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to add reminder');
+                        return response.json();
+                    })
+                    .then(() => {
+                        titleInput.value = '';
+                        datetimeInput.value = '';
+                        loadTaskSheet();
+                        bootstrap.Modal.getInstance(document.getElementById('addReminderModal')).hide();
+                    })
+                    .catch(error => console.error('Error adding reminder:', error));
+            }
+        });
+    });
+</script>
+{% endblock %}

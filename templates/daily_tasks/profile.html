@@ -1,0 +1,454 @@
+{% extends 'daily_tasks/base.html' %}
+
+{% block title %}الملف الشخصي - مدير المهام اليومية{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>الملف الشخصي</h1>
+    <p class="text-muted">إدارة معلومات حسابك الشخصي</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <!-- User information card -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">معلومات الحساب</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-placeholder rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-circle fa-4x text-secondary"></i>
+                    </div>
+                    <h4 id="user-full-name">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted" id="user-username">@{{ user.username }}</p>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">البريد الإلكتروني</span>
+                        <span id="user-email">{{ user.email }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">تاريخ الانضمام</span>
+                        <span id="user-joined">{{ user.date_joined|date:"d M Y" }}</span>
+                    </li>
+                </ul>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="fas fa-edit me-1"></i> تعديل الملف الشخصي
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="fas fa-key me-1"></i> تغيير كلمة المرور
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- Statistics card -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">إحصائيات المهام</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <h3 id="total-task-sheets" class="mb-0 fw-bold text-primary">-</h3>
+                                <p class="text-muted small mb-0">أوراق مهام</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <h3 id="total-priorities" class="mb-0 fw-bold text-danger">-</h3>
+                                <p class="text-muted small mb-0">الأولويات</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <h3 id="total-todos" class="mb-0 fw-bold text-success">-</h3>
+                                <p class="text-muted small mb-0">المهام</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card border-0">
+                            <div class="card-body">
+                                <h3 id="completion-rate" class="mb-0 fw-bold text-info">-</h3>
+                                <p class="text-muted small mb-0">نسبة الإنجاز</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent activity -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">آخر النشاطات</h5>
+            </div>
+            <div class="card-body">
+                <div id="recent-activities" class="list-group list-group-flush">
+                    <div class="text-center py-3" id="loading-activities">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="no-activities" class="text-center py-3" style="display: none;">
+                        <p class="text-muted">لا توجد نشاطات حتى الآن</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تعديل الملف الشخصي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-profile-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">الاسم الأول</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">الاسم الأخير</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+                    </div>
+                    <div id="profile-update-alert" class="alert" style="display: none;"></div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تغيير كلمة المرور</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="change-password-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">كلمة المرور الحالية</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">كلمة المرور الجديدة</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">تأكيد كلمة المرور</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <div id="password-update-alert" class="alert" style="display: none;"></div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">تغيير كلمة المرور</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch user statistics
+        fetchUserStats();
+        
+        // Fetch recent activities
+        fetchRecentActivities();
+        
+        // Edit profile form submission
+        document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateProfile();
+        });
+        
+        // Change password form submission
+        document.getElementById('change-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            changePassword();
+        });
+        
+        // Fetch user statistics
+        function fetchUserStats() {
+            fetch('/api/user/', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(userData => {
+                // User data is loaded, now fetch task sheets
+                return fetch('/api/task-sheets/', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(taskSheets => {
+                // Process task sheet data
+                document.getElementById('total-task-sheets').textContent = taskSheets.length;
+                
+                let totalPriorities = 0;
+                let totalTodos = 0;
+                let completedTasks = 0;
+                
+                taskSheets.forEach(sheet => {
+                    totalPriorities += sheet.priorities.length;
+                    totalTodos += sheet.todos.length;
+                    
+                    // Count completed tasks
+                    sheet.priorities.forEach(priority => {
+                        if (priority.completed) completedTasks++;
+                    });
+                    
+                    sheet.todos.forEach(todo => {
+                        if (todo.completed) completedTasks++;
+                    });
+                });
+                
+                document.getElementById('total-priorities').textContent = totalPriorities;
+                document.getElementById('total-todos').textContent = totalTodos;
+                
+                const totalTasks = totalPriorities + totalTodos;
+                const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                document.getElementById('completion-rate').textContent = `${completionRate}%`;
+            })
+            .catch(error => {
+                console.error('Error fetching statistics:', error);
+            });
+        }
+        
+        // Fetch recent activities
+        function fetchRecentActivities() {
+            fetch('/api/task-sheets/', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(taskSheets => {
+                const activitiesContainer = document.getElementById('recent-activities');
+                document.getElementById('loading-activities').style.display = 'none';
+                
+                if (taskSheets && taskSheets.length > 0) {
+                    // Sort task sheets by updated_at date (newest first)
+                    taskSheets.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+                    
+                    // Take only 5 most recent
+                    const recentTaskSheets = taskSheets.slice(0, 5);
+                    
+                    recentTaskSheets.forEach(sheet => {
+                        const date = new Date(sheet.date);
+                        const formattedDate = date.toLocaleDateString('ar-EG', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        const activityItem = document.createElement('a');
+                        activityItem.className = 'list-group-item list-group-item-action';
+                        activityItem.href = `/task-sheet/${sheet.date}/`;
+                        
+                        const totalTasks = sheet.priorities.length + sheet.todos.length;
+                        const completedTasks = [...sheet.priorities, ...sheet.todos]
+                            .filter(task => task.completed).length;
+                        
+                        activityItem.innerHTML = `
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">مهام ${formattedDate}</h6>
+                                <small>${completedTasks} / ${totalTasks} مكتملة</small>
+                            </div>
+                            <div class="d-flex">
+                                <span class="badge bg-primary me-2">${sheet.priorities.length} أولويات</span>
+                                <span class="badge bg-success me-2">${sheet.todos.length} مهام</span>
+                                <span class="badge bg-info me-2">${sheet.notes.length} ملاحظات</span>
+                            </div>
+                        `;
+                        
+                        activitiesContainer.appendChild(activityItem);
+                    });
+                } else {
+                    document.getElementById('no-activities').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching activities:', error);
+                document.getElementById('loading-activities').style.display = 'none';
+                document.getElementById('no-activities').style.display = 'block';
+            });
+        }
+        
+        // Update profile
+        function updateProfile() {
+            const formData = new FormData(document.getElementById('edit-profile-form'));
+            const data = {
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                email: formData.get('email')
+            };
+            
+            fetch('/api/user/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify(data),
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => Promise.reject(data));
+                }
+                return response.json();
+            })
+            .then(user => {
+                // Update profile information in the UI
+                document.getElementById('user-full-name').textContent = 
+                    user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.username;
+                document.getElementById('user-email').textContent = user.email;
+                
+                // Show success message
+                const alert = document.getElementById('profile-update-alert');
+                alert.className = 'alert alert-success';
+                alert.textContent = 'تم تحديث الملف الشخصي بنجاح';
+                alert.style.display = 'block';
+                
+                // Close the modal after a delay
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+                    alert.style.display = 'none';
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                
+                // Show error message
+                const alert = document.getElementById('profile-update-alert');
+                alert.className = 'alert alert-danger';
+                alert.textContent = 'حدث خطأ أثناء تحديث الملف الشخصي';
+                alert.style.display = 'block';
+            });
+        }
+        
+        // Change password
+        function changePassword() {
+            const formData = new FormData(document.getElementById('change-password-form'));
+            const newPassword = formData.get('new_password');
+            const confirmPassword = formData.get('confirm_password');
+            
+            // Check if passwords match
+            if (newPassword !== confirmPassword) {
+                const alert = document.getElementById('password-update-alert');
+                alert.className = 'alert alert-danger';
+                alert.textContent = 'كلمات المرور غير متطابقة';
+                alert.style.display = 'block';
+                return;
+            }
+            
+            const data = {
+                current_password: formData.get('current_password'),
+                new_password: newPassword
+            };
+            
+            fetch('/api/user/change-password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify(data),
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => Promise.reject(data));
+                }
+                return response.json();
+            })
+            .then(result => {
+                // Show success message
+                const alert = document.getElementById('password-update-alert');
+                alert.className = 'alert alert-success';
+                alert.textContent = 'تم تغيير كلمة المرور بنجاح';
+                alert.style.display = 'block';
+                
+                // Reset the form
+                document.getElementById('change-password-form').reset();
+                
+                // Close the modal after a delay
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                    alert.style.display = 'none';
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error changing password:', error);
+                
+                // Show error message
+                const alert = document.getElementById('password-update-alert');
+                alert.className = 'alert alert-danger';
+                alert.textContent = error.message || 'حدث خطأ أثناء تغيير كلمة المرور';
+                alert.style.display = 'block';
+            });
+        }
+    });
+</script>
+{% endblock %}
