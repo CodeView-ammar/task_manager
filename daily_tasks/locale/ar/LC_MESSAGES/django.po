@@ -1,0 +1,142 @@
+# Translation for Daily Tasks Manager
+# This file contains translations for Arabic language
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Daily Tasks Manager 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-05-15 12:00+0200\n"
+"PO-Revision-Date: 2023-05-15 12:00+0200\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+# Common terms
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+msgid "Tasks"
+msgstr "المهام"
+
+msgid "Priorities"
+msgstr "الأولويات"
+
+msgid "Notes"
+msgstr "الملاحظات"
+
+msgid "Learnings"
+msgstr "التعلم"
+
+msgid "Reminders"
+msgstr "التذكيرات"
+
+msgid "Profile"
+msgstr "الملف الشخصي"
+
+msgid "History"
+msgstr "السجل"
+
+msgid "Login"
+msgstr "تسجيل الدخول"
+
+msgid "Logout"
+msgstr "تسجيل الخروج"
+
+msgid "Register"
+msgstr "إنشاء حساب"
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Completed"
+msgstr "مكتمل"
+
+msgid "Pending"
+msgstr "قيد الانتظار"
+
+# Auth
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+msgid "First Name"
+msgstr "الاسم الأول"
+
+msgid "Last Name"
+msgstr "الاسم الأخير"
+
+msgid "Confirm Password"
+msgstr "تأكيد كلمة المرور"
+
+# Tasks
+msgid "Task Title"
+msgstr "عنوان المهمة"
+
+msgid "Priority Title"
+msgstr "عنوان الأولوية"
+
+msgid "Note Content"
+msgstr "محتوى الملاحظة"
+
+msgid "What did you learn today?"
+msgstr "ماذا تعلمت اليوم؟"
+
+msgid "Reminder Title"
+msgstr "عنوان التذكير"
+
+msgid "Date and Time"
+msgstr "التاريخ والوقت"
+
+# Success messages
+msgid "Task added successfully"
+msgstr "تمت إضافة المهمة بنجاح"
+
+msgid "Priority added successfully"
+msgstr "تمت إضافة الأولوية بنجاح"
+
+msgid "Note added successfully"
+msgstr "تمت إضافة الملاحظة بنجاح"
+
+msgid "Learning added successfully"
+msgstr "تمت إضافة التعلم بنجاح"
+
+msgid "Reminder added successfully"
+msgstr "تمت إضافة التذكير بنجاح"
+
+# Error messages
+msgid "An error occurred"
+msgstr "حدث خطأ"
+
+msgid "Passwords do not match"
+msgstr "كلمات المرور غير متطابقة"
+
+msgid "Invalid credentials"
+msgstr "بيانات الدخول غير صالحة"
+
+msgid "Username already exists"
+msgstr "اسم المستخدم موجود بالفعل"
+
+msgid "Email already exists"
+msgstr "البريد الإلكتروني موجود بالفعل"
