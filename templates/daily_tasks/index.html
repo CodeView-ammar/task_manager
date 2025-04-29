@@ -1,0 +1,85 @@
+{% extends 'daily_tasks/base.html' %}
+
+{% block title %}مدير المهام اليومية - الصفحة الرئيسية{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-md-6 order-md-2 mb-4 mb-md-0">
+        <img src="/static/images/task-hero.svg" alt="إدارة المهام" class="img-fluid">
+    </div>
+    <div class="col-md-6 order-md-1 text-center text-md-start">
+        <h1 class="display-4 fw-bold mb-4">مدير المهام اليومية</h1>
+        <p class="lead mb-4">نظّم مهامك اليومية بكفاءة وحقق المزيد من الإنتاجية.</p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 me-md-2">إنشاء حساب</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">تسجيل الدخول</a>
+        </div>
+    </div>
+</div>
+
+<div class="row py-5">
+    <div class="col-12 text-center">
+        <h2 class="mb-4">مميزات التطبيق</h2>
+    </div>
+</div>
+
+<div class="row g-4 pb-5">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">قائمة المهام اليومية</h3>
+                <p class="card-text">نظم مهامك لليوم الحالي وتتبع إنجازاتك.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-star fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">الأولويات الرئيسية</h3>
+                <p class="card-text">حدد المهام ذات الأولوية العالية وركز على ما يهم.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">التعلم اليومي</h3>
+                <p class="card-text">سجل ما تعلمته يومياً وفكر بشكل استراتيجي.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 pb-5">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-sticky-note fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">الملاحظات</h3>
+                <p class="card-text">سجل الافكار والملاحظات المهمة لرجوع إليها لاحقاً.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-bell fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">التذكيرات</h3>
+                <p class="card-text">ضبط تذكيرات للمهام المهمة والمواعيد القادمة.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-history fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">متابعة السجل</h3>
+                <p class="card-text">راجع سجل مهامك السابقة وتعرف على الإنجازات.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
