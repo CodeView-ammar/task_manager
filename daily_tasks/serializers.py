@@ -17,13 +17,13 @@ class PrioritySerializer(serializers.ModelSerializer):
 class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
-        fields = ['id', 'title', 'completed', 'order']
+        fields = ['id', 'title', 'completed', 'order', 'priority']
         read_only_fields = ['id']
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = ['id', 'content', 'created_at']
+        fields = ['id', 'content', 'created_at', 'priority', 'todo']
         read_only_fields = ['id', 'created_at']
 
 class LearningSerializer(serializers.ModelSerializer):
@@ -35,8 +35,8 @@ class LearningSerializer(serializers.ModelSerializer):
 class ReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reminder
-        fields = ['id', 'title', 'datetime', 'completed']
-        read_only_fields = ['id']
+        fields = ['id', 'title', 'description', 'datetime', 'notify_before', 'notification_sent', 'completed', 'priority', 'todo']
+        read_only_fields = ['id', 'notification_sent']
 
 class TaskSheetSerializer(serializers.ModelSerializer):
     priorities = PrioritySerializer(many=True, read_only=True)

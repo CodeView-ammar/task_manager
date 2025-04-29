@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 
 from .models import TaskSheet, Priority, Todo, Note, Learning, Reminder
+from .notifications import check_reminders, send_notification
 from .serializers import (
     UserSerializer, TaskSheetSerializer, PrioritySerializer,
     TodoSerializer, NoteSerializer, LearningSerializer,

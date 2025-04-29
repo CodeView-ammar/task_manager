@@ -29,6 +29,7 @@ class Priority(models.Model):
 
 class Todo(models.Model):
     task_sheet = models.ForeignKey(TaskSheet, on_delete=models.CASCADE, related_name='todos')
+    priority = models.ForeignKey('Priority', on_delete=models.SET_NULL, related_name='related_todos', null=True, blank=True)
     title = models.CharField(max_length=255)
     completed = models.BooleanField(default=False)
     order = models.SmallIntegerField(default=0)
@@ -41,6 +42,8 @@ class Todo(models.Model):
 
 class Note(models.Model):
     task_sheet = models.ForeignKey(TaskSheet, on_delete=models.CASCADE, related_name='notes')
+    priority = models.ForeignKey('Priority', on_delete=models.SET_NULL, related_name='related_notes', null=True, blank=True)
+    todo = models.ForeignKey('Todo', on_delete=models.SET_NULL, related_name='related_notes', null=True, blank=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -56,10 +59,26 @@ class Learning(models.Model):
         return f"Learning for {self.task_sheet}"
 
 class Reminder(models.Model):
+    NOTIFICATION_CHOICES = [
+        ('5', '5 دقائق'),
+        ('15', '15 دقيقة'),
+        ('30', '30 دقيقة'),
+        ('60', 'ساعة واحدة'),
+        ('1440', 'يوم واحد'),
+    ]
+    
     task_sheet = models.ForeignKey(TaskSheet, on_delete=models.CASCADE, related_name='reminders')
+    priority = models.ForeignKey('Priority', on_delete=models.SET_NULL, related_name='related_reminders', null=True, blank=True)
+    todo = models.ForeignKey('Todo', on_delete=models.SET_NULL, related_name='related_reminders', null=True, blank=True)
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
     datetime = models.DateTimeField()
+    notify_before = models.CharField(max_length=10, choices=NOTIFICATION_CHOICES, default='15') # Minutes before
+    notification_sent = models.BooleanField(default=False)
     completed = models.BooleanField(default=False)
     
     def __str__(self):
         return self.title
+        
+    class Meta:
+        ordering = ['datetime']
