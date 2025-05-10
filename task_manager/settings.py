@@ -89,18 +89,18 @@ DATABASES = {
     }
 }
 
-# Use PostgreSQL if environment variables are set
-if os.getenv('DATABASE_NAME') and os.getenv('DATABASE_USER'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DATABASE_NAME'),
-            'USER': os.getenv('DATABASE_USER'),
-            'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-            'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-            'PORT': os.getenv('DATABASE_PORT', '5432'),
-        }
-    }
+# # Use PostgreSQL if environment variables are set
+# if os.getenv('DATABASE_NAME') and os.getenv('DATABASE_USER'):
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': os.getenv('DATABASE_NAME'),
+#             'USER': os.getenv('DATABASE_USER'),
+#             'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+#             'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+#             'PORT': os.getenv('DATABASE_PORT', '5432'),
+#         }
+#     }
 
 
 # Password validation
@@ -127,8 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'ar')
 
-TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
-
+TIME_ZONE = 'Asia/Riyadh'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True

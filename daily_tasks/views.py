@@ -63,6 +63,7 @@ def profile_view(request):
 # API Views
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def register_api(request):
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
