@@ -82,3 +82,34 @@ class Reminder(models.Model):
         
     class Meta:
         ordering = ['datetime']
+
+class DailyTask(models.Model):
+    PRIORITY_CHOICES = [
+        ('low', 'منخفضة'),
+        ('medium', 'متوسطة'),
+        ('high', 'عالية'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'قيد الانتظار'),
+        ('accepted', 'مقبولة'),
+        ('rejected', 'مرفوضة'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_tasks')
+    name = models.CharField(max_length=255, verbose_name='اسم المهمة')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium', verbose_name='الأولوية')
+    task_time = models.TimeField(verbose_name='وقت المهمة')
+    description = models.TextField(verbose_name='وصف المهمة')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name='الحالة')
+    task_date = models.DateField(verbose_name='تاريخ المهمة')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['task_date', 'task_time']
+        verbose_name = 'المهمة اليومية'
+        verbose_name_plural = 'المهام اليومية'
+        
+    def __str__(self):
+        return self.name

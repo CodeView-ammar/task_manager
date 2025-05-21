@@ -8,14 +8,14 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from datetime import datetime
+from datetime import datetime, date
 
-from .models import TaskSheet, Priority, Todo, Note, Learning, Reminder
+from .models import TaskSheet, Priority, Todo, Note, Learning, Reminder, DailyTask
 from .notifications import check_reminders, send_notification
 from .serializers import (
     UserSerializer, TaskSheetSerializer, PrioritySerializer,
     TodoSerializer, NoteSerializer, LearningSerializer,
-    ReminderSerializer, UserRegistrationSerializer
+    ReminderSerializer, UserRegistrationSerializer, DailyTaskSerializer
 )
 
 # HTML Template Views
@@ -74,15 +74,19 @@ def register_api(request):
 
 @api_view(['POST'])
 def login_api(request):
-    username = request.data.get('username')
+    username = request.data.get('username') 
     password = request.data.get('password')
+    print(username)
+    print(password)
+    if not username or not password:
+        return Response({'error': 'يرجى تزويد اسم المستخدم وكلمة المرور.'}, status=status.HTTP_400_BAD_REQUEST)
     
     user = authenticate(username=username, password=password)
     if user:
         login(request, user)
         return Response(UserSerializer(user).data)
-    return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
+    
+    return Response({'error': 'بيانات الدخول غير صحيحة.'}, status=status.HTTP_401_UNAUTHORIZED)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_api(request):
@@ -325,6 +329,72 @@ def reminder_detail_api(request, pk):
         reminder.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# Daily Tasks API
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def daily_tasks_api(request):
+    """List all daily tasks or create a new daily task"""
+    if request.method == 'GET':
+        # Get date parameter or use today's date
+        task_date = request.query_params.get('date', date.today().isoformat())
+        
+        # Filter tasks by user and date
+        tasks = DailyTask.objects.filter(user=request.user, task_date=task_date)
+        serializer = DailyTaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        # Add the current user to the task data
+        data = request.data.copy()
+        data['user'] = request.user.id
+        
+        serializer = DailyTaskSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def daily_task_detail_api(request, pk):
+    """Retrieve, update or delete a daily task"""
+    task = get_object_or_404(DailyTask, id=pk, user=request.user)
+    
+    if request.method == 'GET':
+        serializer = DailyTaskSerializer(task)
+        return Response(serializer.data)
+    
+    elif request.method == 'PUT':
+        serializer = DailyTaskSerializer(task, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        task.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def daily_task_status_api(request, pk):
+    """Update the status of a daily task (accept/reject)"""
+    task = get_object_or_404(DailyTask, id=pk, user=request.user)
+    
+    if 'status' not in request.data:
+        return Response({'error': 'Status field is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    new_status = request.data['status']
+    if new_status not in ['accepted', 'rejected']:
+        return Response({'error': 'Status must be either "accepted" or "rejected"'}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+    
+    task.status = new_status
+    task.save()
+    
+    serializer = DailyTaskSerializer(task)
+    return Response(serializer.data)
+
 # Notifications API
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -340,3 +410,68 @@ def notifications_api(request):
     notifications = [send_notification(reminder) for reminder in user_reminders]
     
     return Response(notifications)
+    
+# Daily Task HTML Views
+@login_required
+def daily_task_list(request):
+    """View for displaying daily tasks"""
+    # Get date parameter or use today's date
+    selected_date = request.GET.get('date')
+    if selected_date:
+        try:
+            selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = date.today()
+    else:
+        selected_date = date.today()
+    
+    # Get tasks for the selected date
+    daily_tasks = DailyTask.objects.filter(
+        user=request.user,
+        task_date=selected_date
+    ).order_by('task_time')
+    
+    context = {
+        'daily_tasks': daily_tasks,
+        'selected_date': selected_date,
+        'today_date': date.today().strftime('%Y-%m-%d')
+    }
+    
+    return render(request, 'daily_tasks/daily/index.html', context)
+
+@login_required
+def daily_task_create(request):
+    """View for creating a new daily task"""
+    if request.method == 'POST':
+        # Create new task
+        task = DailyTask(
+            user=request.user,
+            name=request.POST.get('name'),
+            priority=request.POST.get('priority'),
+            task_time=request.POST.get('task_time'),
+            description=request.POST.get('description'),
+            task_date=request.POST.get('task_date'),
+            status='pending'
+        )
+        task.save()
+        
+        # Redirect back to the daily tasks page
+        return redirect('daily_task_list')
+    
+    # If not POST, redirect to the list page
+    return redirect('daily_task_list')
+
+@login_required
+def daily_task_update_status(request, pk):
+    """View for updating a daily task's status"""
+    if request.method == 'POST':
+        task = get_object_or_404(DailyTask, id=pk, user=request.user)
+        
+        # Update status
+        new_status = request.POST.get('status')
+        if new_status in ['accepted', 'rejected']:
+            task.status = new_status
+            task.save()
+        
+        # Redirect back to the daily tasks page with the appropriate date
+        return redirect(f'/daily-tasks/?date={task.task_date}')

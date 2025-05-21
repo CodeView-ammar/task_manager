@@ -46,6 +46,9 @@
                             <a class="nav-link {% if request.resolver_match.url_name == 'task_sheet' %}active{% endif %}" href="{% url 'task_sheet' %}">مهام اليوم</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'daily_task_list' %}active{% endif %}" href="{% url 'daily_task_list' %}">المهام اليومية</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'history' %}active{% endif %}" href="{% url 'history' %}">السجل</a>
                         </li>
                         {% endif %}
@@ -127,6 +130,7 @@
     {% if user.is_authenticated %}
     <script src="/static/js/notifications.js"></script>
     {% endif %}
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

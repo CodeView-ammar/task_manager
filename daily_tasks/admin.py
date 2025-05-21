@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TaskSheet, Priority, Todo, Note, Learning, Reminder
+from .models import TaskSheet, Priority, Todo, Note, Learning, Reminder, DailyTask
 
 @admin.register(TaskSheet)
 class TaskSheetAdmin(admin.ModelAdmin):
@@ -44,3 +44,10 @@ class ReminderAdmin(admin.ModelAdmin):
     list_display = ('title', 'task_sheet', 'datetime', 'completed')
     list_filter = ('completed', 'datetime', 'task_sheet__date')
     search_fields = ('title', 'task_sheet__user__username')
+
+@admin.register(DailyTask)
+class DailyTaskAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'priority', 'task_time', 'task_date', 'status')
+    list_filter = ('priority', 'status', 'task_date')
+    search_fields = ('name', 'description', 'user__username')
+    date_hierarchy = 'task_date'

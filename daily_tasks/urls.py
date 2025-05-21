@@ -17,7 +17,7 @@ urlpatterns = [
     path('api/login/', views.login_api, name='api_login'),
     path('api/logout/', views.logout_api, name='api_logout'),
     path('api/user/', views.get_user_data, name='api_user_data'),
-    
+     
     # TaskSheet API
     path('api/task-sheets/', views.task_sheet_list_api, name='api_task_sheet_list'),
     path('api/task-sheets/<str:date>/', views.task_sheet_date_api, name='api_task_sheet_date'),
@@ -42,6 +42,16 @@ urlpatterns = [
     path('api/task-sheets/<int:task_sheet_id>/reminders/', views.reminder_list_api, name='api_reminder_list'),
     path('api/reminders/<int:pk>/', views.reminder_detail_api, name='api_reminder_detail'),
     
+    # Daily Tasks API
+    path('api/daily-tasks/', views.daily_tasks_api, name='api_daily_tasks'),
+    path('api/daily-tasks/<int:pk>/', views.daily_task_detail_api, name='api_daily_task_detail'),
+    path('api/daily-tasks/<int:pk>/status/', views.daily_task_status_api, name='api_daily_task_status'),
+    
     # Notifications API
     path('api/notifications/', views.notifications_api, name='api_notifications'),
+    
+    # Daily Tasks HTML Pages
+    path('daily-tasks/', views.daily_task_list, name='daily_task_list'),
+    path('daily-tasks/create/', views.daily_task_create, name='daily_task_create'),
+    path('daily-tasks/<int:pk>/update-status/', views.daily_task_update_status, name='daily_task_update_status'),
 ]

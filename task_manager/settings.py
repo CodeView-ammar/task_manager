@@ -31,6 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-p-eh&%swieb5qsfj94#+p^$63r
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
+ALLOWED_HOSTS.append('*')
 
 
 # Application definition
@@ -106,6 +107,9 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
+# Authentication settings
+LOGIN_URL = '/login/'
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -162,8 +166,8 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True  # For development only
+# CORS_ALLOW_CREDENTIALS = True
 
 # Template directories
 TEMPLATES[0]['DIRS'] = [BASE_DIR / 'templates']
